@@ -1,0 +1,66 @@
+{
+  "name": "ripburn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:web": "vite",
+    "build": "vite build",
+    "server": "tsx server/index.ts",
+    "start": "node --import tsx server/index.ts",
+    "check": "tsx scripts/check-assumptions.ts",
+    "test": "node --import ./scripts/test-env.mjs --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.3.16",
+    "@fastify/cookie": "11.1.2",
+    "@fastify/rate-limit": "10.3.0",
+    "@fastify/static": "^8.0.0",
+    "@fontsource-variable/fredoka": "5.3.0",
+    "@fontsource-variable/nunito": "5.3.0",
+    "@metaplex-foundation/mpl-core": "1.10.0",
+    "@metaplex-foundation/mpl-token-metadata": "3.4.0",
+    "@metaplex-foundation/umi": "1.6.0",
+    "@metaplex-foundation/umi-bundle-defaults": "1.6.0",
+    "@pump-fun/pump-sdk": "2.0.0",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.99.0",
+    "bigint-buffer": "file:vendor/bigint-buffer",
+    "bs58": "6.0.0",
+    "dotenv": "17.4.2",
+    "fastify": "5.12.5",
+    "pg": "8.23.0",
+    "tsx": "4.20.6",
+    "tweetnacl": "1.0.3",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/node": "22.19.19",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@wallet-standard/app": "1.1.1",
+    "lucide-react": "1.31.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3",
+    "vite": "8.0.16"
+  },
+  "overrides": {
+    "@solana/web3.js": {
+      "jayson": "5.0.0"
+    },
+    "bigint-buffer": "$bigint-buffer",
+    "ws@^8.0.0": "^8.21.0",
+    "esbuild": "^0.28.1"
+  }
+}

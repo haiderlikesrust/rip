@@ -1,0 +1,18 @@
+/node_modules
+/dist
+/.data/
+/coverage
+.DS_Store
+*.pem
+*.keypair.json
+/secrets/
+*.tsbuildinfo
+npm-debug.log*
+.env*
+!.env.example
+/reports/
+
+# Remotion promo video project, renders and its dependencies
+/video/
+/build-id
+/static-build/

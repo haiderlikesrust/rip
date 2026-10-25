@@ -1,0 +1,12 @@
+{
+  "name": "Ripburn",
+  "short_name": "Ripburn",
+  "description": "Rip packs. Burn supply. Holders never take an L.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff9ec",
+  "theme_color": "#ffcb05",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -1,0 +1,18 @@
+# Local development database only. Set DATABASE_URL=postgres://ripburn:rb_local@127.0.0.1:54330/ripburn
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ripburn
+      POSTGRES_PASSWORD: rb_local
+      POSTGRES_DB: ripburn
+    ports:
+      - "127.0.0.1:54330:5432"
+    volumes:
+      - ripburn-dev-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ripburn"]
+      interval: 5s
+      retries: 10
+volumes:
+  ripburn-dev-db:
