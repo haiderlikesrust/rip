@@ -101,7 +101,7 @@ export function App() {
     <div className="aurora" aria-hidden="true"><i /><i /><i /></div>
     <header data-app-chrome className="sticky top-0 z-40 backdrop-blur-xl [background:color-mix(in_srgb,var(--color-bg)_72%,transparent)]">
       <div className="mx-auto flex h-[72px] max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${BRAND.name} home`}><Logo size={34} /><Wordmark className="text-[1.45rem]" /></Link>
+        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${BRAND.name} home`}><Wordmark className="h-9 sm:h-10" /></Link>
         {practice && <span className="chip hidden bg-violet-soft text-violet sm:inline-flex"><FlaskConical size={13} />Practice</span>}
         <nav aria-label="Main" className="mx-auto hidden items-center gap-1 md:flex">
           {pages.map(([href, label]) => <Link key={href} href={href} current={href === active} className={`group relative px-3.5 py-2 font-display text-[0.95rem] font-semibold transition-colors ${href === active ? 'text-ink' : 'text-sub hover:text-ink'}`}>
@@ -118,7 +118,7 @@ export function App() {
 
     {/* Phones: a full-screen sheet of big links. */}
     {menu && <div className="fixed inset-0 z-50 flex flex-col bg-bg/95 px-6 pb-8 pt-5 backdrop-blur-xl md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
-      <div className="flex items-center justify-between"><Wordmark className="text-2xl" /><button onClick={() => setMenu(false)} className="grid size-10 place-items-center rounded-full bg-card" aria-label="Close menu"><X size={18} /></button></div>
+      <div className="flex items-center justify-between"><Wordmark className="h-9" /><button onClick={() => setMenu(false)} className="grid size-10 place-items-center rounded-full bg-card" aria-label="Close menu"><X size={18} /></button></div>
       <nav className="mt-10 grid gap-2">{pages.map(([href, label], i) => <Link key={href} href={href} onClick={() => setMenu(false)} className={`rounded-2xl px-4 py-3 font-display text-3xl font-bold ${href === active ? 'bg-card text-ink shadow-[var(--shadow-soft)]' : 'text-sub'}`}><span className="fade-up block" style={{ animationDelay: `${i * 40}ms` }}>{label}</span></Link>)}</nav>
       <div className="mt-auto">{wallet}</div>
     </div>}
@@ -128,7 +128,7 @@ export function App() {
     <footer data-app-chrome className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
       <div className="panel grid gap-8 p-8 sm:p-10 md:grid-cols-[1.3fr_1fr]">
         <div>
-          <div className="flex items-center gap-2.5"><Logo size={40} /><Wordmark className="text-3xl" /></div>
+          <Wordmark className="h-12" />
           <p className="mt-3 max-w-sm text-sub">{BRAND.tagline}</p>
           <ContractAddress className="mt-5 max-w-md" />
         </div>

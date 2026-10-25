@@ -4,21 +4,21 @@ import { X } from 'lucide-react';
 import type { Card } from '../../shared/types';
 import { packDef } from '../../shared/packs';
 import { useShowcase } from './showcase';
+import { BRAND } from '../../shared/brand';
+import { BURN, FLAME, FLAME_CORE, RIP, WORDMARK } from './logo-paths';
 
-/** The mark: an ember tile with a card standing in it and a flame cut through the card. */
+/** The mark: the flame from over the wordmark's i. */
 export function Logo({ size = 32 }: { size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
-    <defs>
-      <linearGradient id="rb-tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ff4b3e" /><stop offset=".6" stopColor="#ff8a3d" /><stop offset="1" stopColor="#ffc23c" /></linearGradient>
-    </defs>
-    <rect width="40" height="40" rx="12" fill="url(#rb-tile)" />
-    <rect x="11" y="7" width="18" height="26" rx="4" fill="#fff" transform="rotate(8 20 20)" />
-    <path d="M20.6 12.5c.9 3 4.6 4.8 4.6 9.3a5.2 5.2 0 0 1-10.4 0c0-2.1 1-3.6 2-4.6.3 1.8 1.2 2.9 2.4 3.4-.6-3.1-.2-5.7 1.4-8.1Z" fill="url(#rb-tile)" transform="rotate(8 20 20)" />
-  </svg>;
+  return <svg width={size} height={size} viewBox={WORDMARK.flameBox} aria-hidden="true"><path d={FLAME} className="fill-ember" /><path d={FLAME_CORE} className="fill-gold" /></svg>;
 }
-/** The name in rounded type, "burn" in the ember gradient. */
-export function Wordmark({ className = 'text-xl' }: { className?: string }) {
-  return <span className={`font-display font-bold tracking-tight ${className}`}>rip<span className="text-burn">burn</span></span>;
+/** The name: "RIP" in the text color (so it turns light in dark mode), "BURN" in ember. Size it by height. */
+export function Wordmark({ className = 'h-8' }: { className?: string }) {
+  return <svg viewBox={WORDMARK.box} className={`w-auto shrink-0 ${className}`} role="img" aria-label={BRAND.name}>
+    <path d={RIP} fill="currentColor" fillRule="evenodd" />
+    <path d={FLAME} className="fill-ember" />
+    <path d={FLAME_CORE} className="fill-gold" />
+    <path d={BURN} className="fill-ember" fillRule="evenodd" />
+  </svg>;
 }
 
 /** Each Collector Crypt machine gets a name and a color of ours. */
