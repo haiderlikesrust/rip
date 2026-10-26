@@ -20,6 +20,10 @@ export function Wordmark({ className = 'h-8' }: { className?: string }) {
     <path d={BURN} className="fill-ember" fillRule="evenodd" />
   </svg>;
 }
+/** The X (Twitter) logo, in the text color. */
+export function XLogo({ size = 16 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" /></svg>;
+}
 
 /** Each Collector Crypt machine gets a name and a color of ours. */
 type PackStyle = { name: string; color: string; item: 'card' | 'watch' };

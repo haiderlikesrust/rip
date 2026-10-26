@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useState, type Ref } from 'react';
 import { FlaskConical, LogOut, Menu, Moon, Sun, Wallet as WalletIcon, X } from 'lucide-react';
 import type { HolderView } from '../../shared/types';
-import { BRAND } from '../../shared/brand';
+import { BRAND, X_URL } from '../../shared/brand';
 import { api, newerBuild, short } from './api';
 import { forget, onAccountSwitch, signIn, useWallets } from './wallet';
-import { Logo, Modal, Toast, Wordmark } from './ui';
+import { Logo, Modal, Toast, Wordmark, XLogo } from './ui';
 import { HomePage } from './pages/home';
 import { BurnsPage } from './pages/burns';
 import { TreasuryPage } from './pages/treasury';
@@ -109,6 +109,7 @@ export function App() {
           </Link>)}
         </nav>
         <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <a href={X_URL} target="_blank" rel="noreferrer" className="grid size-10 place-items-center rounded-full text-sub hover:bg-card hover:text-ink" aria-label={`${BRAND.name} on X`} title={`@${BRAND.x} on X`}><XLogo size={16} /></a>
           <button onClick={theme.toggle} className="grid size-10 place-items-center rounded-full text-sub hover:bg-card hover:text-ink" aria-label={theme.dark ? 'Switch to light mode' : 'Switch to dark mode'}>{theme.dark ? <Sun size={18} /> : <Moon size={18} />}</button>
           <div className="hidden sm:block">{wallet}</div>
           <button onClick={() => setMenu(true)} className="grid size-10 place-items-center rounded-full bg-card shadow-[var(--shadow-soft)] md:hidden" aria-label="Open menu"><Menu size={18} /></button>
@@ -120,7 +121,10 @@ export function App() {
     {menu && <div className="fixed inset-0 z-50 flex flex-col bg-bg/95 px-6 pb-8 pt-5 backdrop-blur-xl md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
       <div className="flex items-center justify-between"><Wordmark className="h-9" /><button onClick={() => setMenu(false)} className="grid size-10 place-items-center rounded-full bg-card" aria-label="Close menu"><X size={18} /></button></div>
       <nav className="mt-10 grid gap-2">{pages.map(([href, label], i) => <Link key={href} href={href} onClick={() => setMenu(false)} className={`rounded-2xl px-4 py-3 font-display text-3xl font-bold ${href === active ? 'bg-card text-ink shadow-[var(--shadow-soft)]' : 'text-sub'}`}><span className="fade-up block" style={{ animationDelay: `${i * 40}ms` }}>{label}</span></Link>)}</nav>
-      <div className="mt-auto">{wallet}</div>
+      <div className="mt-auto grid gap-4">
+        <a href={X_URL} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 font-display font-semibold text-sub"><XLogo size={16} />Follow @{BRAND.x}</a>
+        {wallet}
+      </div>
     </div>}
 
     <main data-app-chrome className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">{page}</main>
@@ -130,6 +134,7 @@ export function App() {
         <div>
           <Wordmark className="h-12" />
           <p className="mt-3 max-w-sm text-sub">{BRAND.tagline}</p>
+          <a href={X_URL} target="_blank" rel="noreferrer" className="btn btn-ink btn-sm mt-5 w-fit"><XLogo size={14} />Follow @{BRAND.x}</a>
           <ContractAddress className="mt-5 max-w-md" />
         </div>
         <div className="grid content-start gap-5">
