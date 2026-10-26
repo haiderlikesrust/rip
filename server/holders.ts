@@ -10,9 +10,10 @@ const HOUR = 3_600_000;
 export type HolderCheck = { configured: boolean; holder: boolean; balance: bigint; lowest: bigint; required: bigint; reason: string | null };
 
 /**
- * Who counts as a holder: the wallet's *lowest* coin balance over the last `holderWindowHours`, read from
- * on-chain history, must reach `holderMinTokens`. Buying right before a pull, or moving one bag between
- * wallets, does not count until it has been held for the whole window.
+ * Who counts as a holder: the wallet's coin balance must reach `holderMinTokens`. With `holderWindowHours` = 0
+ * (the default) that's the balance now. Above 0, it's the *lowest* balance over that many hours, read from
+ * on-chain history, so buying right before a pull, or moving one bag between wallets, does not count until it
+ * has been held for the whole window.
  */
 export class Holders {
   private histories = new Map<string, { at: number; since: number; value: Promise<HolderHistory> }>();

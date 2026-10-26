@@ -85,9 +85,10 @@ test('a reservation taken by one paid order is not available to the next holder'
   await s.db.close();
 });
 
-test('holder status needs the minimum held for the whole window', async () => {
+test('with a holding window set, holder status needs the minimum held for the whole window', async () => {
   const s = await setup(), { wallet } = await user(s, false);
   s.solana.setHolderPpm(wallet, 10_000, Date.now() - 3_600_000);
+  await s.settings.save({ ...s.settings.current, holderWindowHours: 24 });
   s.holders.forget(wallet);
   const check = await s.holders.check(wallet);
   assert.equal(check.holder, false, 'bought an hour ago, the window is 24h');

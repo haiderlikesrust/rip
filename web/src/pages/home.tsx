@@ -270,7 +270,7 @@ function PackPanel({ pack, signedIn, busy, waitMs, count, max, setQty, onRip, ca
   </aside>;
 }
 
-/** Your holder status as a ring: lowest balance over the window against the minimum. */
+/** Your holder status as a ring: lowest balance over the window (or the balance now, with no window) against the minimum. */
 function HolderCard() {
   const { me, connect, config } = useApp();
   const ticker = useTicker(), h = me.holder, s = config?.settings;
@@ -284,7 +284,7 @@ function HolderCard() {
       <div className="min-w-0">
         {!me.wallet ? <><p className="font-display text-lg font-bold">Connect to check</p><p className="mt-1 text-sm text-sub">Holders get every loss repaid in USDC.</p><button className="btn btn-ink btn-sm mt-3" onClick={connect}>Connect</button></>
           : h?.holder ? <><p className="flex items-center gap-1.5 font-display text-lg font-bold text-mint"><Check size={18} />You're a holder</p><p className="mt-1 text-sm text-sub">Losses on your packs come back 100%.</p></>
-          : <><p className="font-display text-lg font-bold">Not a holder yet</p><p className="mt-1 text-sm text-sub">Hold {required.toLocaleString('en-US')} {ticker}{h?.windowHours ? ` for ${h.windowHours}h` : ''}. Your lowest balance counts.</p></>}
+          : <><p className="font-display text-lg font-bold">Not a holder yet</p><p className="mt-1 text-sm text-sub">Hold {required.toLocaleString('en-US')} {ticker}{h?.windowHours ? ` for ${h.windowHours}h. Your lowest balance counts.` : ' when you open a pack.'}</p></>}
       </div>
     </div>
     {me.wallet && h && <div className="mt-5 grid grid-cols-2 gap-3 text-sm">

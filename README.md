@@ -14,7 +14,7 @@ The **treasury** is the dev wallet. It is the coin's creator-fee recipient, and 
 
 Each paid holder order holds back its worst-case repay (the full price). If free USDC can't cover that at some price, **holder packs at that price pause** until the reserve refills. Non-holders keep opening.
 
-A **holder** is a wallet whose *lowest* on-chain balance over the last `holderWindowHours` (24 by default) reached `holderMinTokens`. Buying just before a pull doesn't count.
+A **holder** is a wallet holding at least `holderMinTokens` when it starts an order. That check is instant by default (`holderWindowHours` = 0), so someone can buy, rip and sell. Set `holderWindowHours` above 0 to require the *lowest* on-chain balance over that many hours instead, so buying just before a pull doesn't count.
 
 This was adapted from [haiderlikesrust/ppp](https://github.com/haiderlikesrust/ppp) ("Pullback"). The Collector Crypt purchase flow, the persist-then-broadcast transactions, the Jupiter swaps, the pump.fun fee claims and practice mode all come from there.
 

@@ -10,7 +10,7 @@ export const DEFAULT_SETTINGS: Settings = {
   paused: false,
   burnCapBps: 5_000,
   holderMinTokens: 1_000_000,
-  holderWindowHours: 24,
+  holderWindowHours: 0,
   usdcReserveTargetUsd: 1_000,
   burnBatchMinUsd: 10,
   burnEveryMinutes: 10,
