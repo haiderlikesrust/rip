@@ -5,10 +5,17 @@ import { micros } from '../shared/economics';
 
 const CARDS = 1_000_000n;
 
-test('queued burns wait for the batch minimum, then run as one swap and burn', async () => {
-  const s = await setup({ burnBatchMinUsd: 50 }), { wallet } = await user(s);
+test('a settled pull is bought back and burned on the next pass, however small', async () => {
+  const s = await setup(), { wallet } = await user(s);
+  await pull(s, wallet, 'pokemon_25', 5);
+  assert.equal((await s.burns.step())?.usd, 5, 'no minimum and no waiting');
+  assert.equal(await s.burns.step(), null, 'nothing left to burn');
+  await s.db.close();
+});
+
+test('pulls that settle before a burn runs go out as one swap and burn, shared pro rata', async () => {
+  const s = await setup(), { wallet } = await user(s);
   await pull(s, wallet, 'pokemon_25', 20);
-  assert.equal(await s.burns.step(), null, '$20 is under the $50 batch minimum');
   await pull(s, wallet, 'pokemon_25', 40);
   const cardsBefore = s.solana.cards;
   const result = await s.burns.step();
@@ -26,15 +33,6 @@ test('queued burns wait for the batch minimum, then run as one swap and burn', a
   const order = (await s.orders.list(wallet))[0];
   assert.equal(order.burn?.status, 'burned');
   assert.ok(order.burn?.signature, 'the receipt links to the burn');
-  await s.db.close();
-});
-
-test('an old queued burn runs after burnEveryMinutes even below the minimum', async () => {
-  const s = await setup({ burnBatchMinUsd: 1_000, burnEveryMinutes: 10 }), { wallet } = await user(s);
-  await pull(s, wallet, 'pokemon_25', 5);
-  assert.equal(await s.burns.step(), null);
-  await s.db.query('UPDATE burns SET created_at=$1', [Date.now() - 11 * 60_000]);
-  assert.equal((await s.burns.step())?.usd, 5);
   await s.db.close();
 });
 
@@ -59,7 +57,7 @@ test('an empty fund records the burn as skipped instead of promising $CARDS it d
 });
 
 test('a failed burn keeps its batch and resumes as the same batch', async () => {
-  const s = await setup({ burnBatchMinUsd: 1 }), { wallet } = await user(s);
+  const s = await setup(), { wallet } = await user(s);
   await pull(s, wallet, 'pokemon_25', 10);
   s.solana.burnFailures = 1;
   await assert.rejects(s.burns.step(), /No supported swap route/);
@@ -73,7 +71,7 @@ test('a failed burn keeps its batch and resumes as the same batch', async () => 
 });
 
 test('repays come first: the reserve refills from free $CARDS but never from $CARDS promised to burns', async () => {
-  const s = await setup({ usdcReserveTargetUsd: 500, burnBatchMinUsd: 10_000 }), { wallet } = await user(s);
+  const s = await setup({ usdcReserveTargetUsd: 500 }), { wallet } = await user(s);
   await pull(s, wallet, 'pokemon_100', 100); // queues a $100 burn = 400 $CARDS
   s.solana.setTreasuryUsdc(micros(100)); s.solana.cards = 1_000n * CARDS; s.treasury.invalidate();
   const refill = await s.treasury.refill();

@@ -12,8 +12,6 @@ export const DEFAULT_SETTINGS: Settings = {
   holderMinTokens: 1_000_000,
   holderWindowHours: 0,
   usdcReserveTargetUsd: 1_000,
-  burnBatchMinUsd: 10,
-  burnEveryMinutes: 10,
   serviceFeeBps: 0,
   cooldown: { minutes: 0, wallets: [] },
   pausedPacks: [],

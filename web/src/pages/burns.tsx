@@ -7,7 +7,7 @@ import { CountUp, Empty, Reveal, Ring, SectionHead, Stat } from '../ui';
 
 const EMBERS = Array.from({ length: 16 }, (_, i) => ({ '--x': `${(i * 61) % 100}%`, '--s': `${4 + (i % 4) * 2}px`, '--d': `${(i % 8) * 0.45}s`, '--t': `${3 + (i % 5) * 0.6}s`, '--dx': `${((i * 17) % 50) - 25}px`, '--h': `${200 + (i % 4) * 60}px` }));
 
-/** Every buyback-and-burn: a flame and the running total, the fund that pays for them, and each batch on a timeline. */
+/** Every buyback-and-burn: a flame and the running total, the fund that pays for them, and each burn on a timeline. */
 export function BurnsPage() {
   const { version } = useApp();
   const ticker = useTicker();
@@ -45,7 +45,7 @@ export function BurnsPage() {
         <h2 className="font-display text-2xl font-bold">Every pull burns</h2>
         <p className="mt-2 text-sub">Rip any pack and the treasury buys back {ticker} worth the card's insured value, then burns it. One pull can use at most {pct(cap)} of the free fund, so a big hit never empties it.</p>
         <div className="mt-5 rounded-2xl bg-ember-soft px-5 py-4 text-center font-display text-lg font-bold">burn = min(card value, {pct(cap)} × fund)</div>
-        <p className="mt-4 text-sm text-sub">Burns queue up and run together, as one swap of $CARDS into {ticker} and then one burn, so every pull's share links to a real transaction.</p>
+        <p className="mt-4 text-sm text-sub">It happens right after the pull settles: one swap of $CARDS into {ticker}, then one burn, both linked below.</p>
       </Reveal>
       <Reveal delay={0.08} className="panel flex flex-wrap items-center gap-6 p-7">
         <Ring value={fund && fund.balance > 0 ? fund.free / fund.balance : 0} size={170} stroke={16} color="var(--color-ember)" marker={cap / 10_000}>
@@ -60,15 +60,16 @@ export function BurnsPage() {
 
     {/* Timeline */}
     <section className="pt-16">
-      <SectionHead title="Burn timeline" sub="Newest first. Each batch is one buyback and one burn on Solana." />
-      {view && !view.batches.length && <Empty title="No burns yet" text="The first batch runs once pulls have queued enough, or a few minutes after the first pull." />}
+      <SectionHead title="Burn timeline" sub="Newest first. Each one is a single buyback and burn on Solana." />
+      {view && !view.batches.length && <Empty title="No burns yet" text="The first burn runs seconds after the first pull settles." />}
       {!!view?.batches.length && <ol className="relative ml-3 border-l-[3px] border-dashed border-edge pl-8 sm:ml-5">
         {view.batches.map((b, i) => <Reveal as="li" key={b.id} delay={Math.min(i, 6) * 0.04} className="relative pb-6 last:pb-0">
           <span className={`absolute -left-[46px] top-4 grid size-7 place-items-center rounded-full ring-4 ring-bg ${b.status === 'burned' ? 'bg-gradient-to-br from-ember to-ember-2 text-white' : 'bg-gold text-ink'}`}><Flame size={14} /></span>
           <div className="panel lift flex flex-wrap items-center gap-x-6 gap-y-3 p-5">
             <div className="min-w-0 flex-1">
-              <div className="font-display text-2xl font-bold tnum">{b.status === 'burned' ? `${Number(b.coinBurned).toLocaleString('en-US', { maximumFractionDigits: 0 })} ${ticker}` : b.status === 'review' ? 'On hold' : 'Burning…'}</div>
-              <div className="text-sm text-sub">{money(b.usd)} of $CARDS · {b.pulls} pull{b.pulls === 1 ? '' : 's'} · {ago(b.burnedAt ?? b.createdAt)}</div>
+              <div className="font-display text-2xl font-bold tnum">{b.status === 'burned' ? `${Number(b.coinBurned).toLocaleString('en-US', { maximumFractionDigits: 0 })} ${ticker} burned` : b.status === 'review' ? 'On hold' : `Buying back ${ticker}…`}</div>
+              {/* The fund pays in $CARDS: they're swapped into the coin, and the coin is what gets burned. */}
+              <div className="text-sm text-sub">{b.status === 'burned' ? 'Bought back' : 'Buying'} with {money(b.usd)} of $CARDS · {b.pulls} pull{b.pulls === 1 ? '' : 's'} · {ago(b.burnedAt ?? b.createdAt)}</div>
             </div>
             <div className="flex gap-2">
               {b.swapSignature && <a className="chip bg-soft hover:bg-edge" href={solscan('tx', b.swapSignature)} target="_blank" rel="noreferrer">Buyback<ArrowUpRight size={13} /></a>}

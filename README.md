@@ -9,7 +9,7 @@ Ripburn sells Collector Crypt Pokémon packs for our pump.fun coin. Every pack o
 
 The **treasury** is the dev wallet. It is the coin's creator-fee recipient, and those fees arrive in $CARDS. It keeps two buckets:
 
-- **$CARDS, the burn fund.** Claimed creator fees stay here. Each pull's burn is fixed in $CARDS at settlement. Queued burns run in batches: one Jupiter swap of $CARDS into the coin, then one burn. If $CARDS doesn't route straight to the coin, the swap goes $CARDS → USDC → coin.
+- **$CARDS, the burn fund.** Claimed creator fees stay here. Each pull's burn is fixed in $CARDS at settlement and runs within seconds: one Jupiter swap of $CARDS into the coin (never split into smaller buys), then one burn. If $CARDS doesn't route straight to the coin, the swap goes $CARDS → USDC → coin.
 - **USDC, the repay reserve.** Repays come first. Whenever free USDC falls below its target, free $CARDS is sold to top it up. $CARDS already promised to a queued burn is never sold.
 
 Each paid holder order holds back its worst-case repay (the full price). If free USDC can't cover that at some price, **holder packs at that price pause** until the reserve refills. Non-holders keep opening.
@@ -35,7 +35,7 @@ With no `.env`, the app runs in **practice mode**: Solana is mocked in memory an
 No keys or money are involved.
 
 ```bash
-npm test          # economics, orders (repay, burn queue, pauses), burn batches, refills, payments, Collector Crypt flow
+npm test          # economics, orders (repay, burn queue, pauses), burns, refills, payments, Collector Crypt flow
 npm run typecheck
 npm run build     # builds the frontend into dist/, which the API server then serves
 ```
@@ -52,7 +52,7 @@ Production runs at **ripburn.cards** on Dokploy as an Application (this reposito
 | `shared/brand.ts` | Site name and tagline (rename here) |
 | `server/orders.ts` | On-site state machine: quote → pay → buy → deliver → settle (repay + queue burn), plus refunds and review |
 | `server/treasury.ts` | USDC reserve and reservations, $CARDS burn fund, refills, creator-fee claims, service-fee forwarding |
-| `server/burns.ts` | Burn queue: batching, $CARDS → coin buyback and burn, pro-rata receipts |
+| `server/burns.ts` | Burn queue: each pull's $CARDS → coin buyback and burn right after it settles, pro-rata receipts |
 | `server/holders.ts` | Holder check: lowest on-chain balance over the window |
 | `server/fees.ts` | pump.fun creator-fee claim into TREASURY, kept as $CARDS |
 | `server/chain.ts`, `swap.ts` | Persist-then-broadcast transactions, Jupiter (Metis) swaps, Token-2022-aware burn, NFT transfer |
@@ -71,10 +71,10 @@ Production runs at **ripburn.cards** on Dokploy as an Application (this reposito
    - creator fees go to TREASURY in $CARDS,
    - Jupiter returns a Metis route for $CARDS → USDC and for $CARDS → coin (or USDC → coin),
    - both wallets have USDC accounts and SOL.
-3. **Set the rules** on `/admin` (owner = `OWNER_WALLET`): burn cap X, holder minimum and window, USDC reserve target, burn batch size, packs on sale.
+3. **Set the rules** on `/admin` (owner = `OWNER_WALLET`): burn cap X, holder minimum and window, USDC reserve target, packs on sale.
 4. **Smoke test.**
    1. Set `MAINNET_ENABLED=true` and open one $25 pack as a holder and one as a non-holder.
-   2. Check the repay, the queued burns and the burn batch on Solscan.
+   2. Check the repay and each pull's buyback and burn on Solscan.
    3. Compare the treasury page with the on-chain balances.
 5. **Add link-preview artwork.** Put a 1200×630 `og:image` in `index.html`; the old project's images were removed.
 

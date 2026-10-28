@@ -14,8 +14,6 @@ export const settingsSchema: z.ZodType<Settings> = z.object({
   holderMinTokens: z.number().finite().min(0).max(1e15),
   holderWindowHours: z.number().finite().min(0).max(24 * 30),
   usdcReserveTargetUsd: z.number().finite().min(0).max(10_000_000),
-  burnBatchMinUsd: z.number().finite().min(0).max(1_000_000),
-  burnEveryMinutes: z.number().finite().min(1).max(7 * 24 * 60),
   serviceFeeBps: z.number().int().min(0).max(5_000),
   cooldown: z.object({ minutes: cooldownMinutes, wallets: z.array(z.object({ wallet: walletAddress, minutes: cooldownMinutes })).max(200) }),
   pausedPacks: z.array(z.string().min(1).max(40)).max(64),

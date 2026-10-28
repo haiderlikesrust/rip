@@ -292,5 +292,5 @@ export async function createApp(options: { services?: Services | Promise<Service
 
 function publicSettings(s: Services) {
   const c = s.settings.current;
-  return { paused: c.paused, burnCapBps: c.burnCapBps, holderMinTokens: c.holderMinTokens, holderWindowHours: c.holderWindowHours, serviceFeeBps: c.serviceFeeBps, usdcReserveTargetUsd: c.usdcReserveTargetUsd, burnBatchMinUsd: c.burnBatchMinUsd, burnEveryMinutes: c.burnEveryMinutes, pausedPacks: c.pausedPacks };
+  return { paused: c.paused, burnCapBps: c.burnCapBps, holderMinTokens: c.holderMinTokens, holderWindowHours: c.holderWindowHours, serviceFeeBps: c.serviceFeeBps, usdcReserveTargetUsd: c.usdcReserveTargetUsd, pausedPacks: c.pausedPacks };
 }

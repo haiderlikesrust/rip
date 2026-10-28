@@ -57,8 +57,9 @@ export async function swap(chain: Chain, id: string, inputMint: string, outputMi
  * Swaps `total` in one or more parts, recorded under job `id` so a crash resumes the same parts. A part
  * that would move the price more than `maxPriceImpactBps` is halved (down to 1/32 of the total) and tried
  * again on the next pass. Throws PendingOperation until every part has settled.
+ * With `split: false` there is no impact limit and no halving: whatever is left goes in one swap.
  */
-export async function swapInParts(chain: Chain, id: string, inputMint: string, outputMint: string, total: bigint, settings: Settings) {
+export async function swapInParts(chain: Chain, id: string, inputMint: string, outputMint: string, total: bigint, settings: Settings, { split = true } = {}) {
   if (total <= 0n) throw new Error('Swap amount must be positive.');
   let job = await chain.jobs.get(id);
   if (!job) { await chain.jobs.put(id, 'swap-parts', 'routing', { inputMint, outputMint, total: total.toString(), chunk: total.toString(), parts: [] }); job = await chain.jobs.get(id); }
@@ -66,10 +67,15 @@ export async function swapInParts(chain: Chain, id: string, inputMint: string, o
   if (d.inputMint !== inputMint || d.outputMint !== outputMint || d.total !== total.toString()) throw new ReviewRequired('Swap intent changed during recovery.');
   const sold = d.parts.reduce((s: bigint, p: { amount: string }) => s + BigInt(p.amount), 0n);
   if (sold < total) {
+    // Unsplit, the next part is the whole remainder, unless a part of the old size already started (it resumes as itself).
+    if (!split && BigInt(d.chunk) !== total - sold && !(await chain.jobs.get(`${id}:${d.parts.length}:${d.chunk}`))) {
+      d.chunk = (total - sold).toString();
+      await chain.jobs.put(id, 'swap-parts', 'routing', d);
+    }
     const chunk = BigInt(d.chunk), amount = total - sold < chunk ? total - sold : chunk;
     try {
       // The chunk is part of the swap id: a part that was signed resumes as itself, a resized part starts fresh.
-      const part = await swap(chain, `${id}:${d.parts.length}:${chunk}`, inputMint, outputMint, amount, settings, 1n, settings.maxPriceImpactBps);
+      const part = await swap(chain, `${id}:${d.parts.length}:${chunk}`, inputMint, outputMint, amount, settings, 1n, split ? settings.maxPriceImpactBps : undefined);
       d.parts.push({ amount: amount.toString(), received: part.received.toString(), signature: part.signature });
       await chain.jobs.put(id, 'swap-parts', 'routing', d);
     } catch (error) {

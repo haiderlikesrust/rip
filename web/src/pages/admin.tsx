@@ -64,11 +64,9 @@ export function AdminPage() {
           <div className="mt-6"><Toggle checked={form.paused} danger onChange={v => set('paused', v)} label={form.paused ? 'Paused: no new packs, repays or burns' : 'Running'} /></div>
         </Card>}
 
-        {tab === 'burn' && <Card title="Buyback & burn" sub={`Each pull burns min(insured value, ${pct(form.burnCapBps)} of the free $CARDS fund) of ${ticker}. Burns queue and run together.`}>
+        {tab === 'burn' && <Card title="Buyback & burn" sub={`Each pull burns min(insured value, ${pct(form.burnCapBps)} of the free $CARDS fund) of ${ticker}, bought in one swap right after the pull settles.`}>
           <Grid>
             <Field label="Burn cap X %" hint="Most of the free fund one pull may use"><input className="field tnum" type="number" step="5" min="0" max="100" value={form.burnCapBps / 100} onChange={e => set('burnCapBps', Math.round(n(e.target.value) * 100))} /></Field>
-            <Field label="Run a batch at $" hint="Queued burns run once they add up to this"><input className="field tnum" type="number" value={form.burnBatchMinUsd} onChange={e => set('burnBatchMinUsd', n(e.target.value))} /></Field>
-            <Field label="…or after minutes" hint="Whichever comes first"><input className="field tnum" type="number" value={form.burnEveryMinutes} onChange={e => set('burnEveryMinutes', n(e.target.value))} /></Field>
           </Grid>
         </Card>}
 
@@ -105,7 +103,7 @@ export function AdminPage() {
         {tab === 'swaps' && <Card title="Creator fees and swaps">
           <Grid cols="sm:grid-cols-2">
             <Field label="Claim creator fees at $" hint="Claimed once this much has built up"><input className="field tnum" type="number" value={form.creatorFeeMinUsd} onChange={e => set('creatorFeeMinUsd', n(e.target.value))} /></Field>
-            <Field label="Max price impact %" hint="Bigger swaps are split into parts"><input className="field tnum" type="number" step="0.5" value={form.maxPriceImpactBps / 100} onChange={e => set('maxPriceImpactBps', Math.round(n(e.target.value) * 100))} /></Field>
+            <Field label="Max price impact %" hint="$CARDS sales above this are split into parts. Buybacks never are"><input className="field tnum" type="number" step="0.5" value={form.maxPriceImpactBps / 100} onChange={e => set('maxPriceImpactBps', Math.round(n(e.target.value) * 100))} /></Field>
             <Field label="Slippage %"><input className="field tnum" type="number" step="0.1" value={form.slippageBps / 100} onChange={e => set('slippageBps', Math.round(n(e.target.value) * 100))} /></Field>
             <Field label="Forward service fees at $" hint="OPS → treasury"><input className="field tnum" type="number" value={form.feeTransferThresholdUsd} onChange={e => set('feeTransferThresholdUsd', n(e.target.value))} /></Field>
           </Grid>
@@ -129,9 +127,9 @@ export function AdminPage() {
         </Card>}
 
         {tab === 'attention' && <div className="grid gap-6">
-          <Card title="Burn batches" sub="A batch that keeps failing waits here. Its swap and burn resume as the same jobs.">
+          <Card title="Stuck burns" sub="A burn that keeps failing waits here. Its swap and burn resume as the same jobs.">
             {data.burnReview.length ? <Rows>{data.burnReview.map(b => <Item key={b.id} tag={b.status} tone="bg-ember-soft text-ember" id={b.id.slice(11, 19)} error={b.error} extra={`${money(Number(b.usd_micros) / 1e6)} · ${b.pulls} pulls`}>
-              {b.status === 'review' && <button className="btn btn-soft btn-sm" onClick={() => act(`/admin/burns/${b.id}/retry`, {}, 'Burn batch will retry.')}>Retry</button>}
+              {b.status === 'review' && <button className="btn btn-soft btn-sm" onClick={() => act(`/admin/burns/${b.id}/retry`, {}, 'The burn will retry.')}>Retry</button>}
             </Item>)}</Rows> : <Quiet>All burns are flowing.</Quiet>}
           </Card>
           <Card title="Delayed orders" sub="Paid orders retrying on their own, waiting longer each time. After about 3 hours of failures they move to review.">

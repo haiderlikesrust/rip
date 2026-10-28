@@ -15,7 +15,7 @@ import { PracticeDock } from './parts/practice';
 import { ContractAddress } from './parts/contract';
 
 export type Me = { wallet: string | null; owner?: boolean; holder?: HolderView | null };
-export type PublicSettings = { paused: boolean; burnCapBps: number; holderMinTokens: number; holderWindowHours: number; serviceFeeBps: number; usdcReserveTargetUsd: number; burnBatchMinUsd: number; burnEveryMinutes: number; pausedPacks: string[] };
+export type PublicSettings = { paused: boolean; burnCapBps: number; holderMinTokens: number; holderWindowHours: number; serviceFeeBps: number; usdcReserveTargetUsd: number; pausedPacks: string[] };
 export type AppConfig = { mode: 'practice' | 'mainnet' | 'read-only'; mint: string | null; symbol: string; treasuryAddress: string | null; opsAddress: string | null; settings: PublicSettings };
 type Ctx = { me: Me; config: AppConfig | null; refresh: () => Promise<void>; connect: () => void; notify: (message: string) => void; version: number; bump: () => void };
 const AppContext = createContext<Ctx>(null as any);

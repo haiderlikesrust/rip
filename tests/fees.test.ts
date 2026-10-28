@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { setup } from './helpers';
-import { PriceImpactTooHigh, swap } from '../server/swap';
+import { PriceImpactTooHigh, swap, swapInParts } from '../server/swap';
 import { DEFAULT_SETTINGS } from '../shared/economics';
 import type { Chain } from '../server/chain';
 import { usdcValue } from '../server/fees';
@@ -52,5 +52,33 @@ test('a fee sale is refused before signing when it would move the price too much
     globalThis.fetch = (async () => new Response(JSON.stringify(order('-0.004')))) as typeof fetch;
     // 0.4% is under the 3% cap, so it gets past the impact check (and stops at the missing transaction).
     await assert.rejects(swap(chain, 'b', 'CARDS', 'USDC', 500n, DEFAULT_SETTINGS, 1n, 300), /stop before building/);
+  } finally { globalThis.fetch = original; }
+});
+
+test('a buyback is one swap: no impact limit, and a part already split down resumes as the whole remainder', async () => {
+  const jobs = new Map<string, any>();
+  const chain = {
+    address: 'Pool1111111111111111111111111111111111111111',
+    jobs: { get: async (id: string) => jobs.get(id) ?? null, put: async (id: string, kind: string, status: string, data: any) => { jobs.set(id, { id, kind, status, data }); } },
+    execute: async (_id: string, _kind: string, build: () => Promise<unknown>) => { await build(); return 'signature'; },
+    tokenDelta: async () => 1_000_000n,
+  } as unknown as Chain;
+  const original = globalThis.fetch;
+  // Pump.fun quotes report about 4% impact at any size; a split buyback would never get under a 3% limit.
+  globalThis.fetch = (async () => new Response(JSON.stringify({ router: 'metis', priceImpactPct: '-0.042', transaction: null, errorMessage: 'stop before building' }))) as typeof fetch;
+  try {
+    await assert.rejects(swapInParts(chain, 'a', 'CARDS', 'COIN', 3_200n, DEFAULT_SETTINGS, { split: false }), /stop before building/);
+    assert.equal(jobs.get('a:0:3200')?.data.amount, '3200', 'the whole amount in one swap');
+    // A buyback the old code had already split to 1/32, with one part bought: the rest goes in one swap.
+    jobs.set('b', { id: 'b', kind: 'swap-parts', status: 'routing', data: { inputMint: 'CARDS', outputMint: 'COIN', total: '3200', chunk: '100', parts: [{ amount: '100', received: '1', signature: 's' }] } });
+    await assert.rejects(swapInParts(chain, 'b', 'CARDS', 'COIN', 3_200n, DEFAULT_SETTINGS, { split: false }), /stop before building/);
+    assert.equal(jobs.get('b').data.chunk, '3100');
+    assert.equal(jobs.get('b:1:3100')?.data.amount, '3100');
+    // A part of the old size that had already started resumes as itself, so it is never bought twice.
+    jobs.set('c', { id: 'c', kind: 'swap-parts', status: 'routing', data: { inputMint: 'CARDS', outputMint: 'COIN', total: '3200', chunk: '100', parts: [] } });
+    jobs.set('c:0:100', { id: 'c:0:100', kind: 'swap', status: 'queued', data: { inputMint: 'CARDS', outputMint: 'COIN', amount: '100', minOutput: '1' } });
+    await assert.rejects(swapInParts(chain, 'c', 'CARDS', 'COIN', 3_200n, DEFAULT_SETTINGS, { split: false }), /stop before building/);
+    assert.equal(jobs.get('c').data.chunk, '100');
+    assert.equal(jobs.has('c:0:3200'), false);
   } finally { globalThis.fetch = original; }
 });

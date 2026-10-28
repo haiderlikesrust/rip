@@ -132,6 +132,7 @@ export class LiveSolana implements Solana {
   /**
    * $CARDS → coin in one Jupiter swap when it routes; otherwise $CARDS → USDC → coin. The route chosen first is
    * remembered on the job, so a retry never switches halfway. Then the coin is burned (Token-2022 aware).
+   * A buyback is never split into small buys: each leg is one swap, guarded by the slippage floor.
    */
   async buybackAndBurn(jobId: string, cardsUnits: bigint, settings: Settings) {
     if (!this.holderMint) throw new Error('Configure MEMECOIN_MINT.');
@@ -140,7 +141,7 @@ export class LiveSolana implements Solana {
     let bought: { received: bigint; signature: string };
     try {
       if (route === 'usdc') throw Object.assign(new Error('two-hop'), { twoHop: true });
-      bought = await swapInParts(this.treasury, `${jobId}:swap`, config.CARDS_MINT, this.holderMint, cardsUnits, settings);
+      bought = await swapInParts(this.treasury, `${jobId}:swap`, config.CARDS_MINT, this.holderMint, cardsUnits, settings, { split: false });
       if (!known) await this.treasury.jobs.put(routeId, 'burn-route', 'complete', { route });
     } catch (error) {
       const e = error as Error & { twoHop?: boolean };
@@ -148,8 +149,8 @@ export class LiveSolana implements Solana {
       if (!noRoute) throw error;
       route = 'usdc';
       if (!known) await this.treasury.jobs.put(routeId, 'burn-route', 'complete', { route });
-      const usdc = await swapInParts(this.treasury, `${jobId}:usdc`, config.CARDS_MINT, config.USDC_MINT, cardsUnits, settings);
-      bought = await swapInParts(this.treasury, `${jobId}:coin`, config.USDC_MINT, this.holderMint, usdc.received, settings);
+      const usdc = await swapInParts(this.treasury, `${jobId}:usdc`, config.CARDS_MINT, config.USDC_MINT, cardsUnits, settings, { split: false });
+      bought = await swapInParts(this.treasury, `${jobId}:coin`, config.USDC_MINT, this.holderMint, usdc.received, settings, { split: false });
     }
     const burnSignature = await this.treasury.burn(`${jobId}:burn`, this.holderMint, bought.received, settings);
     return { tokens: bought.received, swapSignature: bought.signature, burnSignature };

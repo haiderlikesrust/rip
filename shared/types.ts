@@ -9,10 +9,6 @@ export type Settings = {
   holderWindowHours: number;
   /** USDC the treasury tries to keep for repays. Claimed $CARDS is sold to refill it before anything is burned. */
   usdcReserveTargetUsd: number;
-  /** Queued burns are executed together once they add up to this much (USD)... */
-  burnBatchMinUsd: number;
-  /** ...or once the oldest has waited this many minutes, whichever comes first. */
-  burnEveryMinutes: number;
   /** Optional service fee on top of the pack price, sent on to the treasury. 0 = none. */
   serviceFeeBps: number;
   /** Minutes a wallet waits between packs. `wallets` override it per wallet. 0 = no wait. */

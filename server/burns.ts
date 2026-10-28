@@ -4,15 +4,15 @@ import { PendingOperation, ReviewRequired } from './jobs';
 import type { Solana } from './ports';
 import type { SettingsStore } from './settings';
 import type { Treasury } from './treasury';
-import { micros, usd, wholeTokens } from '../shared/economics';
+import { usd, wholeTokens } from '../shared/economics';
 import type { BurnBatchView, BurnStatus, BurnsView } from '../shared/types';
 
 type BatchRow = { id: string; status: string; cards_units: string; usd_micros: string; pulls: number; coin_units: string | null; swap_signature: string | null; burn_signature: string | null; created_at: string; burned_at: string | null; error: string | null };
 
 /**
- * Every settled pull queues a buyback-and-burn, fixed in $CARDS at that moment. Queued burns run together
- * once they add up to `burnBatchMinUsd` or the oldest has waited `burnEveryMinutes`: one swap $CARDS → coin,
- * then one burn. Each pull's share of the coin burned is recorded pro rata, so every receipt links to it.
+ * Every settled pull queues a buyback-and-burn, fixed in $CARDS at that moment, and it runs right away: one
+ * swap $CARDS → coin, then one burn. Pulls that settle while a burn is running go together in the next one,
+ * and each pull's share of the coin burned is recorded pro rata, so every receipt links to it.
  */
 export class Burns {
   private backoff = { failures: 0, until: 0, lastError: '' };
@@ -34,8 +34,8 @@ export class Burns {
   }
 
   /**
-   * Starts or continues one batch. Runs in the coordinator's Serial queue. `force` (admin "burn now")
-   * batches whatever is queued without waiting for the thresholds.
+   * Starts or continues one burn of everything queued. Runs in the coordinator's Serial queue. `force`
+   * (admin "burn now") retries without waiting out the backoff after a failure.
    */
   async step(force = false) {
     const s = this.settings.current;
@@ -45,8 +45,7 @@ export class Burns {
     if (!batch) {
       const queued = (await this.db.query<{ id: string; usd_micros: string; cards_units: string; created_at: string }>("SELECT id, usd_micros::text, cards_units, created_at::text FROM burns WHERE status='queued' ORDER BY created_at LIMIT 500")).rows;
       if (!queued.length) return null;
-      const totalUsd = queued.reduce((t, r) => t + Number(r.usd_micros), 0), oldest = Number(queued[0].created_at);
-      if (!force && totalUsd < micros(s.burnBatchMinUsd) && Date.now() - oldest < s.burnEveryMinutes * 60_000) return null;
+      const totalUsd = queued.reduce((t, r) => t + Number(r.usd_micros), 0);
       const id = `burn-batch:${randomUUID()}`, cards = queued.reduce((t, r) => t + BigInt(r.cards_units), 0n);
       await atomic(this.db, async () => {
         await this.db.query('INSERT INTO burn_batches(id,status,cards_units,usd_micros,pulls,created_at) VALUES($1,$2,$3,$4,$5,$6)', [id, 'executing', cards.toString(), totalUsd, queued.length, Date.now()]);

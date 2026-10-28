@@ -70,7 +70,8 @@ export function startCoordinator(s: Services, log: (message: string, error?: unk
   every(2_000, 'orders', () => s.orders.step());
   // Repays come first: the reserve is topped up from $CARDS before queued burns run.
   every(30_000, 'refill', () => s.treasury.refill());
-  every(15_000, 'burns', () => s.burns.step());
+  // A settled pull's buyback starts within seconds.
+  every(5_000, 'burns', () => s.burns.step());
   every(5 * 60_000, 'treasury', () => s.treasury.run());
   // Creator fees: a read-only vault check every second; claiming takes a turn in the queue only when due.
   every(1_000, 'creator-fees', async () => {
